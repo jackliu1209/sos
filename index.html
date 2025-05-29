@@ -1,719 +1,788 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Y L </title>
+    <title>Y L</title>
     <style>
-        :root {
-            --primary-color: #ff0000;
-            --dark-bg: #0f0f0f;
-            --dark-surface: #202020;
-            --dark-text: #f1f1f1;
-            --dark-hover: #303030;
-            --light-bg: #ffffff;
-            --light-surface: #f9f9f9;
-            --light-text: #030303;
-            --light-hover: #e5e5e5;
-            --transition-speed: 0.3s;
-            --sidebar-width: 240px;
-            --sidebar-collapsed-width: 72px;
-            --header-height: 56px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', system-ui, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background: var(--dark-bg);
-            color: var(--dark-text);
-            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
-            overscroll-behavior-y: contain;
-        }
-
-        body.light-theme {
-            background: var(--light-bg);
-            color: var(--light-text);
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 16px;
-            height: var(--header-height);
-            background: var(--dark-bg);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            border-bottom: 1px solid var(--dark-hover);
-            transition: all var(--transition-speed) ease;
-        }
-
-        body.light-theme header {
-            background: var(--light-bg);
-            border-bottom: 1px solid var(--light-hover);
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo {
-            height: 30px;
-        }
-
-        .user-controls {
-            display: flex;
-            align-items: center;
-            min-width: 0;
-            position: relative;
-        }
-
-        .theme-toggle {
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: all var(--transition-speed) ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            overflow: hidden;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--dark-hover);
-        }
-
-        body.light-theme .theme-toggle:hover {
-            background-color: var(--light-hover);
-        }
-
-        .theme-toggle:active {
-            transform: scale(0.95);
-        }
-
-        .theme-toggle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .theme-toggle.rotate img {
-            transform: rotate(360deg);
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            margin-left: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .user-avatar:hover {
-            transform: scale(1.1);
-        }
-
-        .user-avatar:active {
-            transform: scale(0.95);
-        }
-
-        .sidebar {
-            width: var(--sidebar-width);
-            padding: 12px 0;
-            background: var(--dark-bg);
-            height: calc(100vh - var(--header-height));
-            position: fixed;
-            top: var(--header-height);
-            left: 0;
-            overflow-y: auto;
-            z-index: 900;
-            transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .sidebar::-webkit-scrollbar {
-            display: none;
-        }
-
-        body.light-theme .sidebar {
-            background: var(--light-bg);
-        }
-
-        .sidebar.collapsed {
-            width: var(--sidebar-collapsed-width);
-            overflow-x: hidden;
-        }
-
-        .sidebar.collapsed .sidebar-item-text,
-        .sidebar.collapsed .sidebar-section-title {
-            opacity: 0;
-            width: 0;
-            height: 0;
-            overflow: hidden;
-            transition: opacity 0.2s ease;
-        }
-
-        .sidebar-section {
-            padding: 8px 0;
-            border-bottom: 1px solid var(--dark-hover);
-        }
-
-        body.light-theme .sidebar-section {
-            border-bottom: 1px solid var(--light-hover);
-        }
-
-        .sidebar-section-title {
-            padding: 8px 24px;
-            font-size: 16px;
-            font-weight: 500;
-            opacity: 0.7;
-            transition: all var(--transition-speed) ease;
-        }
-
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            padding: 0 12px 0 24px;
-            height: 40px;
-            cursor: pointer;
-            transition: all var(--transition-speed) ease;
-            user-select: none;
-            animation: slideIn 0.3s ease forwards;
-            opacity: 0;
-        }
-
-        .sidebar-item:hover {
-            background: var(--dark-hover);
-        }
-
-        body.light-theme .sidebar-item:hover {
-            background: var(--light-hover);
-        }
-
-        .sidebar-item.active {
-            background: var(--dark-hover);
-            font-weight: bold;
-        }
-
-        body.light-theme .sidebar-item.active {
-            background: var(--light-hover);
-        }
-
-        .sidebar-item-icon {
-            min-width: 24px;
-            margin-right: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: margin var(--transition-speed) ease;
-        }
-
-        .sidebar.collapsed .sidebar-item-icon {
-            margin-right: 0;
-        }
-
-        .sidebar-item-text {
-            font-size: 14px;
-            white-space: nowrap;
-            transition: opacity var(--transition-speed) ease;
-        }
-
-        .content {
-            flex-grow: 1;
-            padding: 20px;
-            margin-left: var(--sidebar-width);
-            transition: margin-left var(--transition-speed) ease;
-        }
-
-        .sidebar.collapsed ~ .content {
-            margin-left: var(--sidebar-collapsed-width);
-        }
-
-        .content-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .content-header {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .content-title {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .content-filters {
-            display: flex;
-            gap: 10px;
-        }
-
-        .filter-button {
-            padding: 8px 16px;
-            background: var(--dark-surface);
-            border: none;
-            border-radius: 20px;
-            color: var(--dark-text);
-            cursor: pointer;
-            transition: all var(--transition-speed) ease;
-        }
-
-        body.light-theme .filter-button {
-            background: var(--light-surface);
-            color: var(--light-text);
-        }
-
-        .filter-button:hover {
-            background: var(--dark-hover);
-        }
-
-        body.light-theme .filter-button:hover {
-            background: var(--light-hover);
-        }
-
-        .filter-button.active {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .slider-container {
-            display: none;
-            width: 100%;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .slider {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            height: 160px;
-        }
-
-        .slide {
-            min-width: 100%;
-            height: 100%;
-            flex-shrink: 0;
-        }
-
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-        }
-
-        .slider-dots {
-            position: absolute;
-            bottom: 10px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .slider-dot {
-            width: 20px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .slider-dot.active {
-            background: var(--primary-color);
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .content-card {
-            background: var(--dark-surface);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-            cursor: pointer;
-        }
-
-        body.light-theme .content-card {
-            background: var(--light-surface);
-        }
-
-        .content-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .card-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-            cursor: pointer;
-        }
-
-        .content-card:hover .card-image {
-            transform: scale(1.05);
-        }
-
-        .card-content {
-            padding: 12px;
-        }
-
-        .card-title {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .card-meta {
-            font-size: 14px;
-            color: #aaa;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        body.light-theme .card-meta {
-            color: #666;
-        }
-
-        .bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--dark-surface);
-            height: 60px;
-            z-index: 1000;
-            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.15s ease-out;
-        }
-
-        body.light-theme .bottom-nav {
-            background: var(--light-surface);
-            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .bottom-nav.hidden {
-            transform: translateY(100%);
-        }
-
-        .bottom-nav-items {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 100%;
-        }
-
-        .bottom-nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--dark-text);
-            font-size: 12px;
-            cursor: pointer;
-            padding: 8px;
-            transition: background-color var(--transition-speed) ease;
-        }
-
-        body.light-theme .bottom-nav-item {
-            color: var(--light-text);
-        }
-
-        .bottom-nav-item:hover {
-            background: var(--dark-hover);
-        }
-
-        body.light-theme .bottom-nav-item:hover {
-            background: var(--light-hover);
-        }
-
-        .bottom-nav-item.active {
-            color: var(--primary-color);
-        }
-
-        .bottom-nav-item svg {
-            width: 24px;
-            height: 24px;
-            margin-bottom: 4px;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 850;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity var(--transition-speed) ease;
-        }
-
-        .overlay.visible {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .contact-content {
-            display: none;
-        }
-
-        .original-content {
-            display: block;
-        }
-
-        .show-contact .original-content {
-            display: none;
-        }
-
-        .show-contact .contact-content {
-            display: block;
-        }
-
-        /* 图片模态框样式 - 修改后的样式 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 1100;
-            overflow: auto;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.show {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 1;
-        }
-
-        .modal-content-container {
-            position: relative;
-            max-width: 90vw;
-            max-height: 90vh;
-            width: auto;
-            height: auto;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-        }
-
-        .modal-content {
-            max-width: 100%;
-            max-height: calc(90vh - 30px);
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            display: block;
-            animation: zoomIn 0.3s ease forwards;
-        }
-
-        @keyframes zoomIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .modal-close {
-            position: absolute;
-            top: -40px;
-            right: 0;
-            color: white;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            z-index: 1101;
-            background: transparent;
-            border: none;
-            outline: none;
-        }
-
-        .modal-caption {
-            color: white;
-            text-align: right;
-            padding: 6px 20px 6px 30px;
-            font-size: 14px;
-            background: rgba(0, 0, 0, 0.5);
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            max-width: 70%;
-            border-top-left-radius: 8px;
-            transform: translateY(0);
-            clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%);
-        }
-
-        /* 幽灵图标动画 */
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-5px);
-            }
-        }
-
-        .ghost-icon {
-            animation: float 2s ease-in-out infinite;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-                z-index: 950;
-                overflow-y: auto;
-                scrollbar-width: none;
-            }
-
-            .sidebar::-webkit-scrollbar {
-                display: none;
-            }
-
-            .sidebar.visible {
-                transform: translateX(0);
-            }
-
-            .content {
-                margin-left: 0;
-                padding: 16px;
-                padding-top: calc(var(--header-height) + 16px);
-                padding-bottom: 80px;
-            }
-
-            .slider-container {
-                display: block;
-            }
-
-            .bottom-nav {
-                display: block;
-            }
-
-            .content-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-
-            .content-filters {
-                width: 100%;
-                overflow-x: auto;
-                padding-bottom: 8px;
-            }
-
-            .content-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-
-            .card-image {
-                height: 120px;
-            }
-
-            .modal-content-container {
-                max-width: 95vw;
-                max-height: 95vh;
-            }
-
-            .modal-content {
-                max-height: calc(95vh - 30px);
-            }
-
-            .modal-close {
-                top: -35px;
-                right: -5px;
-                font-size: 28px;
-            }
-            
-            .modal-caption {
-                padding: 5px 15px 5px 25px;
-                font-size: 13px;
-                clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .content-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-
-            .card-image {
-                height: 100px;
-            }
-
-            .card-title {
-                font-size: 14px;
-            }
-
-            .card-meta {
-                font-size: 12px;
-            }
-            
-            .modal-caption {
-                max-width: 80%;
-                padding: 4px 12px 4px 20px;
-                clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
-            }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .sidebar-item:nth-child(1) { animation-delay: 0.1s; }
-        .sidebar-item:nth-child(2) { animation-delay: 0.15s; }
-        .sidebar-item:nth-child(3) { animation-delay: 0.2s; }
-        .sidebar-item:nth-child(4) { animation-delay: 0.25s; }
-        .sidebar-item:nth-child(5) { animation-delay: 0.3s; }
-        .sidebar-item:nth-child(6) { animation-delay: 0.35s; }
-        .sidebar-item:nth-child(7) { animation-delay: 0.4s; }
-        .sidebar-item:nth-child(8) { animation-delay: 0.45s; }
-        .sidebar-item:nth-child(9) { animation-delay: 0.5s; }
-        .sidebar-item:nth-child(10) { animation-delay: 0.55s; }
+:root {
+    --primary-color: #ff0000;
+    --dark-bg: #0f0f0f;
+    --dark-surface: #202020;
+    --dark-text: #f1f1f1;
+    --dark-hover: #303030;
+    --light-bg: #ffffff;
+    --light-surface: #f9f9f9;
+    --light-text: #030303;
+    --light-hover: #e5e5e5;
+    --transition-speed: 0.3s;
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 72px;
+    --header-height: 56px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    overscroll-behavior-y: contain;
+}
+
+body.light-theme {
+    background: var(--light-bg);
+    color: var(--light-text);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    height: var(--header-height);
+    background: var(--dark-bg);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--dark-hover);
+    transition: all var(--transition-speed) ease;
+}
+
+body.light-theme header {
+    background: var(--light-bg);
+    border-bottom: 1px solid var(--light-hover);
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.youtube-logo-container {
+    width: 42px; /* Reduced from 45px to 42px */
+    height: 42px; /* Reduced from 45px to 42px */
+}
+
+.youtube-logo-container svg {
+    width: 100%;
+    height: 100%;
+}
+
+.youtube-logo-magic {
+    transition: fill 0.5s ease;
+    fill: url(#gradient-default);
+}
+
+.youtube-logo-magic:hover {
+    fill: url(#gradient-hover);
+}
+
+.youtube-logo path {
+    stroke: none;
+}
+
+.logo-text {
+    font-family: 'Quicksand', 'Poppins', sans-serif; /* Quicksand for very rounded, personalized text */
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase; /* Adds a stylized, distinctive touch */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for personality */
+}
+
+.user-controls {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    position: relative;
+}
+
+.theme-toggle {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    background-color: transparent !important;
+}
+
+body.light-theme .theme-toggle:hover {
+    background-color: var(--light-hover);
+}
+
+.theme-toggle:active {
+    transform: scale(0.95);
+}
+
+.theme-toggle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.theme-toggle.rotate img {
+    transform: rotate(360deg);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    background-color: transparent !important;
+}
+
+.user-avatar:hover {
+    transform: scale(1.1);
+}
+
+.user-avatar:active {
+    transform: scale(0.95);
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    padding: 12px 0;
+    background: var(--dark-bg);
+    height: calc(100vh - var(--header-height));
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    overflow-y: auto;
+    z-index: 900;
+    transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+body.light-theme .sidebar {
+    background: var(--light-bg);
+}
+
+.sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+    overflow-x: hidden;
+}
+
+.sidebar.collapsed .sidebar-item-text,
+.sidebar.collapsed .sidebar-section-title {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    transition: opacity 0.2s ease;
+}
+
+.sidebar-section {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--dark-hover);
+}
+
+body.light-theme .sidebar-section {
+    border-bottom: 1px solid var(--light-hover);
+}
+
+.sidebar-section-title {
+    padding: 8px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    opacity: 0.7;
+    transition: all var(--transition-speed) ease;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 0 24px;
+    height: 40px;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    user-select: none;
+    animation: slideIn 0.3s ease forwards;
+    opacity: 0;
+}
+
+.sidebar-item:hover {
+    background: var(--dark-hover);
+}
+
+body.light-theme .sidebar-item:hover {
+    background: var(--light-hover);
+}
+
+.sidebar-item.active {
+    background: var(--dark-hover);
+    font-weight: bold;
+}
+
+body.light-theme .sidebar-item.active {
+    background: var(--light-hover);
+}
+
+.sidebar-item-icon {
+    min-width: 24px;
+    margin-right: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: margin var(--transition-speed) ease;
+}
+
+.sidebar.collapsed .sidebar-item-icon {
+    margin-right: 0;
+}
+
+.sidebar-item-text {
+    font-size: 14px;
+    white-space: nowrap;
+    transition: opacity var(--transition-speed) ease;
+}
+
+.content {
+    flex-grow: 1;
+    padding: 20px;
+    margin-left: var(--sidebar-width);
+    transition: margin-left var(--transition-speed) ease;
+}
+
+.sidebar.collapsed~.content {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+.content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.content-header {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.content-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.content-filters {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-button {
+    padding: 8px 16px;
+    background: var(--dark-surface);
+    border: none;
+    border-radius: 20px;
+    color: var(--dark-text);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+}
+
+body.light-theme .filter-button {
+    background: var(--light-surface);
+    color: var(--light-text);
+}
+
+.filter-button:hover {
+    background: var(--dark-hover);
+}
+
+body.light-theme .filter-button:hover {
+    background: var(--light-hover);
+}
+
+.filter-button.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.slider-container {
+    display: none;
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.slider {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    height: 160px;
+}
+
+.slide {
+    min-width: 100%;
+    height: 100%;
+    flex-shrink: 0;
+}
+
+.slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.slider-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.slider-dot {
+    width: 20px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.slider-dot.active {
+    background: var(--primary-color);
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.content-card {
+    background: var(--dark-surface);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    cursor: pointer;
+}
+
+body.light-theme .content-card {
+    background: var(--light-surface);
+}
+
+.content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.content-card:hover .card-image {
+    transform: scale(1.05);
+}
+
+.card-content {
+    padding: 12px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-meta {
+    font-size: 14px;
+    color: #aaa;
+    display: flex;
+    justify-content: space-between;
+}
+
+body.light-theme .card-meta {
+    color: #666;
+}
+
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--dark-surface);
+    height: 60px;
+    z-index: 1000;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease-out;
+}
+
+body.light-theme .bottom-nav {
+    background: var(--light-surface);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bottom-nav.hidden {
+    transform: translateY(100%);
+}
+
+.bottom-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--dark-text);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 8px;
+    transition: background-color var(--transition-speed) ease;
+}
+
+body.light-theme .bottom-nav-item {
+    color: var(--light-text);
+}
+
+.bottom-nav-item:hover {
+    background: var(--dark-hover);
+}
+
+body.light-theme .bottom-nav-item:hover {
+    background: var(--light-hover);
+}
+
+.bottom-nav-item.active {
+    color: var(--primary-color);
+}
+
+.bottom-nav-item svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 4px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 850;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-speed) ease;
+}
+
+.overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.contact-content {
+    display: none;
+}
+
+.original-content {
+    display: block;
+}
+
+.show-contact .original-content {
+    display: none;
+}
+
+.show-contact .contact-content {
+    display: block;
+}
+
+/* 图片模态框样式 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1100;
+    overflow: auto;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+}
+
+.modal-content-container {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: auto;
+    height: auto;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.modal-content {
+    max-width: 100%;
+    max-height: calc(90vh - 30px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    animation: zoomIn 0.3s ease forwards;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1101;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+.modal-caption {
+    color: white;
+    text-align: right;
+    padding: 6px 20px 6px 30px;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    max-width: 70%;
+    border-top-left-radius: 8px;
+    transform: translateY(0);
+    clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+/* 幽灵图标动画 */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.ghost-icon {
+    animation: float 2s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+        z-index: 950;
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+
+    .sidebar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebar.visible {
+        transform: translateX(0);
+    }
+
+    .content {
+        margin-left: 0;
+        padding: 16px;
+        padding-top: calc(var(--header-height) + 16px);
+        padding-bottom: 80px;
+    }
+
+    .slider-container {
+        display: block;
+    }
+
+    .bottom-nav {
+        display: block;
+    }
+
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .content-filters {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .content-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .card-image {
+        height: 120px;
+    }
+
+    .modal-content-container {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+
+    .modal-content {
+        max-height: calc(95vh - 30px);
+    }
+
+    .modal-close {
+        top: -35px;
+        right: -5px;
+        font-size: 28px;
+    }
+
+    .modal-caption {
+        padding: 5px 15px 5px 25px;
+        font-size: 13px;
+        clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+    }
+}
+
+@media (max-width: 480px) {
+    .content-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .card-image {
+        height: 100px;
+    }
+
+    .card-title {
+        font-size: 14px;
+    }
+
+    .card-meta {
+        font-size: 12px;
+    }
+
+    .modal-caption {
+        max-width: 80%;
+        padding: 4px 12px 4px 20px;
+        clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.sidebar-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.sidebar-item:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.sidebar-item:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.sidebar-item:nth-child(4) {
+    animation-delay: 0.25s;
+}
+
+.sidebar-item:nth-child(5) {
+    animation-delay: 0.3s;
+}
+
+.sidebar-item:nth-child(6) {
+    animation-delay: 0.35s;
+}
+
+.sidebar-item:nth-child(7) {
+    animation-delay: 0.4s;
+}
+
+.sidebar-item:nth-child(8) {
+    animation-delay: 0.45s;
+}
+
+.sidebar-item:nth-child(9) {
+    animation-delay: 0.5s;
+}
+
+.sidebar-item:nth-child(10) {
+    animation-delay: 0.55s;
+}
     </style>
 </head>
+
 <body>
     <div class="overlay" id="overlay"></div>
-    
+
     <!-- 图片模态框 -->
     <div class="modal" id="imageModal">
         <div class="modal-content-container">
@@ -722,18 +791,35 @@
             <div class="modal-caption" id="modalCaption"></div>
         </div>
     </div>
-    
+
     <header>
         <div class="logo-container">
-            <div class="theme-toggle" id="themeToggle">
-                <img src="https://www.ysjf.com/assets/ysjf_active@2x-BTnDL7hV.png" alt="Theme toggle">
-            </div> 
+            <div class="youtube-logo-container">
+                <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- 默认渐变 -->
+                        <linearGradient id="gradient-default" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FF0000" />
+                            <stop offset="100%" stop-color="#FF0000" />
+                        </linearGradient>
+                        <!-- 悬停渐变 -->
+                        <linearGradient id="gradient-hover" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00DCFF" />
+                            <stop offset="100%" stop-color="#FF6B6B" />
+                        </linearGradient>
+                    </defs>
+                    <path class="youtube-logo-magic"
+                        d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
+            </div>
+            <div class="logo-text">yaliu</div>
         </div>
         <div class="user-controls">
-            <img src="https://deepseek-user-avatar.obs.cn-east-3.myhuaweicloud.com/a/4B2ZxPLKNpJHL2oy2YBR97Rg?response-cache-control=max-age=0" alt="love" class="user-avatar" id="userAvatar">
+            <img src="https://deepseek-user-avatar.obs.cn-east-3.myhuaweicloud.com/a/4B2ZxPLKNpJHL2oy2YBR97Rg?response-cache-control=max-age=0"
+                alt="love" class="user-avatar" id="userAvatar">
         </div>
     </header>
-    
+
     <div class="sidebar" id="sidebar">
         <div class="original-content">
             <div class="sidebar-section">
@@ -748,7 +834,9 @@
                 <div class="sidebar-item">
                     <div class="sidebar-item-icon">
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zm-.23 5.86l-8.5 4.5c-1.34.71-3.01.2-3.72-1.14-.71-1.34-.2-3.01 1.14-3.72l2.04-1.08v-1.21l-.69-.28-1.11-.46c-.99-.41-1.65-1.35-1.7-2.41-.05-1.06.52-2.06 1.46-2.56l8.5-4.5c1.34-.71 3.01-.2 3.72 1.14.71 1.34.2 3.01-1.14 3.72L15.5 9.26v1.21l1.8.74c.99.41 1.65 1.35 1.7 2.41.05 1.06-.52 2.06-1.46 2.56z"></path>
+                            <path
+                                d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zm-.23 5.86l-8.5 4.5c-1.34.71-3.01.2-3.72-1.14-.71-1.34-.2-3.01 1.14-3.72l2.04-1.08v-1.21l-.69-.28-1.11-.46c-.99-.41-1.65-1.35-1.7-2.41-.05-1.06.52-2.06 1.46-2.56l8.5-4.5c1.34-.71 3.01-.2 3.72 1.14.71 1.34.2 3.01-1.14 3.72L15.5 9.26v1.21l1.8.74c.99.41 1.65 1.35 1.7 2.41.05 1.06-.52 2.06-1.46 2.56z">
+                            </path>
                         </svg>
                     </div>
                     <div class="sidebar-item-text">My Like</div>
@@ -756,7 +844,8 @@
                 <div class="sidebar-item">
                     <div class="sidebar-item-icon">
                         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path d="M10 18v-6l5 3-5 3zm7-15H7v1h10V3zm3 3H4v1h16V6zm2 3H2v12h20V9zM3 10h18v10H3V10z"></path>
+                            <path d="M10 18v-6l5 3-5 3zm7-15H7v1h10V3zm3 3H4v1h16V6zm2 3H2v12h20V9zM3 10h18v10H3V10z">
+                            </path>
                         </svg>
                     </div>
                     <div class="sidebar-item-text">订阅内容</div>
@@ -777,11 +866,12 @@
                 <div class="sidebar-section-title">个人</div>
                 <div class="sidebar-item">
                     <div class="sidebar-item-icon">
-                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2">
-    <path d="M9 18V5l12-2v13"/>
-    <circle cx="6" cy="18" r="3"/>
-    <circle cx="18" cy="16" r="3"/>
-</svg>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                            stroke-width="1.2">
+                            <path d="M9 18V5l12-2v13" />
+                            <circle cx="6" cy="18" r="3" />
+                            <circle cx="18" cy="16" r="3" />
+                        </svg>
                     </div>
                     <div class="sidebar-item-text">我的音乐</div>
                 </div>
@@ -790,18 +880,20 @@
                 <div class="sidebar-section-title">帮助</div>
                 <div class="sidebar-item theme-toggle-item" id="sidebarThemeToggle">
                     <div class="sidebar-item-icon">
-                          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2">
-                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-            </svg>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                            stroke-width="1.2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
                     </div>
                     <div class="sidebar-item-text">切换主题</div>
                 </div>
                 <div class="sidebar-item contact-toggle">
                     <div class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2">
-    <path d="M22 2L11 13"></path>
-    <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
-</svg>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                            stroke-width="1.2">
+                            <path d="M22 2L11 13"></path>
+                            <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+                        </svg>
                     </div>
                     <div class="sidebar-item-text">联系我</div>
                 </div>
@@ -811,52 +903,59 @@
         <div class="contact-content">
             <div class="sidebar-section">
                 <div class="sidebar-section-title">通讯</div>
-                 <div class="sidebar-item">
+                <div class="sidebar-item">
                     <div class="sidebar-item-icon">
-                        <svg t="1746266022476" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2019/xlink"
-                        p-id="39061" width="16" height="16">
-                        <path d="M157.9 144.8h295.3c30 2.9 22.8 55.1 22.8 88.9V395c0 35 6.7 78-16.8 87.9-15.3 6.5-56.5 1.9-76.3 1.9H226.3c-36.2 0-85.6 8.5-91.2-22.5v-295c4.1-11 11.2-18.9 22.8-22.5m40.7 66.5v210.1h213.1v-213H199.6c-1.2 0.1-1.1 1.5-1 2.9m355.8-66.5h295.3c12 4.4 20.3 12.5 22.8 26.4v287.3c-2.7 11.9-9 22.1-20.8 25.4-19.3 5.3-51.3 1-74.3 1H625.7c-22.9 0-56.8 4.8-75.3-1-26.2-8.1-18.8-58.5-18.8-93.8V239.6c0-40.7-9.1-89.1 22.8-94.8m40.6 66.5v210.1h213.1v-213H596c-1.2 0.1-1.1 1.5-1 2.9m-299.3 61.5c29.7-5.5 53 14.2 53.5 41 0.7 35.3-35.9 54.7-64.4 40.1-32.6-16.7-30.4-73.4 10.9-81.1m396.4 0c69.9-12.9 68.6 96.3 0 85-43.6-7.1-45-76.7 0-85M451.3 881.6H158.9c-12.1-3.7-20.3-11.2-23.8-23.5V564c2.9-8.6 9.5-18.6 19.8-21.5 19.4-5.4 51.1-1 74.3-1h151.6c22.4 0 55-4.9 75.3 1 27.5 8 19.8 57.6 19.8 92.8v155.4c0.2 38 8.5 87.5-24.6 90.9M198.6 608v210.1h213.1v-213H199.6c-1.2 0.1-1.1 1.5-1 2.9m673.9-40.1V650c-2.3 27.7-0.3 59.6-1 88.9H660.4V691c-19.8-2.3-43.9-0.3-65.4-1-2.3 61.9-0.3 128-1 191.5h-38.7c-33.2-6.6-23.8-55.7-23.8-94.8V635.4c0-22.8-4.7-56.9 1-75.2 6.8-21.9 36.1-18.6 65.4-18.6h143.7v130H808c0.7-43-1.3-88.6 1-130 32-1.9 61.6-1.4 63.5 26.3M300.7 668.6c31.7-3.5 57.9 26.6 45.6 59.6-17 45.8-98.5 28.6-83.2-29.3 4.1-16 16.3-28 37.6-30.3m431.1 213h-71.4c0.7-25.1-1.3-52.8 1-76.2h70.4v76.2m140.7-76.2v49.8c-2.8 13.9-11 22.4-23.8 26.4h-50.5c0.7-25.1-1.3-52.8 1-76.2h73.3"
-                          fill="#07C160" p-id="39062"></path>
-                      </svg>
+                        <svg t="1746266022476" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                            xmlns="http://www.w3.org/2000/svg" p-id="39061" width="16" height="16">
+                            <path
+                                d="M157.9 144.8h295.3c30 2.9 22.8 55.1 22.8 88.9V395c0 35 6.7 78-16.8 87.9-15.3 6.5-56.5 1.9-76.3 1.9H226.3c-36.2 0-85.6 8.5-91.2-22.5v-295c4.1-11 11.2-18.9 22.8-22.5m40.7 66.5v210.1h213.1v-213H199.6c-1.2 0.1-1.1 1.5-1 2.9m355.8-66.5h295.3c12 4.4 20.3 12.5 22.8 26.4v287.3c-2.7 11.9-9 22.1-20.8 25.4-19.3 5.3-51.3 1-74.3 1H625.7c-22.9 0-56.8 4.8-75.3-1-26.2-8.1-18.8-58.5-18.8-93.8V239.6c0-40.7-9.1-89.1 22.8-94.8m40.6 66.5v210.1h213.1v-213H596c-1.2 0.1-1.1 1.5-1 2.9m-299.3 61.5c29.7-5.5 53 14.2 53.5 41 0.7 35.3-35.9 54.7-64.4 40.1-32.6-16.7-30.4-73.4 10.9-81.1m396.4 0c69.9-12.9 68.6 96.3 0 85-43.6-7.1-45-76.7 0-85M451.3 881.6H158.9c-12.1-3.7-20.3-11.2-23.8-23.5V564c2.9-8.6 9.5-18.6 19.8-21.5 19.4-5.4 51.1-1 74.3-1h151.6c22.4 0 55-4.9 75.3 1 27.5 8 19.8 57.6 19.8 92.8v155.4c0.2 38 8.5 87.5-24.6 90.9M198.6 608v210.1h213.1v-213H199.6c-1.2 0.1-1.1 1.5-1 2.9m673.9-40.1V650c-2.3 27.7-0.3 59.6-1 88.9H660.4V691c-19.8-2.3-43.9-0.3-65.4-1-2.3 61.9-0.3 128-1 191.5h-38.7c-33.2-6.6-23.8-55.7-23.8-94.8V635.4c0-22.8-4.7-56.9 1-75.2 6.8-21.9 36.1-18.6 65.4-18.6h143.7v130H808c0.7-43-1.3-88.6 1-130 32-1.9 61.6-1.4 63.5 26.3M300.7 668.6c31.7-3.5 57.9 26.6 45.6 59.6-17 45.8-98.5 28.6-83.2-29.3 4.1-16 16.3-28 37.6-30.3m431.1 213h-71.4c0.7-25.1-1.3-52.8 1-76.2h70.4v76.2m140.7-76.2v49.8c-2.8 13.9-11 22.4-23.8 26.4h-50.5c0.7-25.1-1.3-52.8 1-76.2h73.3"
+                                fill="#07C160" p-id="39062"></path>
+                        </svg>
                     </div>
                     <div class="sidebar-item-text">QR</div>
                 </div>
-                   <div class="sidebar-item">
+                <div class="sidebar-item">
                     <div class="sidebar-item-icon">
                         <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" clip-rule="evenodd" 
-                                  d="M14 3H2C1.44772 3 1 3.44772 1 4V12C1 12.5523 1.44772 13 2 13H14C14.5523 13 15 12.5523 15 12V4C15 3.44772 14.5523 3 14 3ZM2 4H14V4.5L8 8.5L2 4.5V4ZM2 12V6.5L8 10.5L14 6.5V12H2Z" 
-                                  fill="#07C160"/>
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M14 3H2C1.44772 3 1 3.44772 1 4V12C1 12.5523 1.44772 13 2 13H14C14.5523 13 15 12.5523 15 12V4C15 3.44772 14.5523 3 14 3ZM2 4H14V4.5L8 8.5L2 4.5V4ZM2 12V6.5L8 10.5L14 6.5V12H2Z"
+                                fill="#07C160" />
                         </svg>
                     </div>
                     <div class="sidebar-item-text">Hi@yaliu.com</div>
                 </div>
                 <div class="sidebar-item">
                     <div class="sidebar-item-icon">
-                        <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.335 13.127a.322.322 0 00-.118.366l.217.814c.01.038.026.077.026.118a.161.161 0 01-.16.16.183.183 0 01-.094-.03l-1.054-.611a.486.486 0 00-.398-.053 5.675 5.675 0 01-1.573.221c-2.662 0-4.82-1.807-4.82-4.035 0-2.23 2.158-4.036 4.82-4.036 2.661 0 4.819 1.807 4.819 4.036 0 1.216-.649 2.31-1.665 3.05zM5.783 1.586c2.885 0 5.276 1.77 5.712 4.083a6.234 6.234 0 00-.314-.009c-2.913 0-5.274 1.978-5.274 4.417 0 .411.068.809.194 1.187a6.807 6.807 0 01-2.205-.258.577.577 0 00-.478.063l-1.266.735a.216.216 0 01-.111.036.193.193 0 01-.193-.194c0-.048.019-.096.031-.142l.26-.976a.388.388 0 00-.141-.44C.778 9.202 0 7.889 0 6.429c0-2.674 2.589-4.842 5.783-4.842zM9.574 9.39c.333 0 .602-.27.602-.605a.603.603 0 00-.602-.604.603.603 0 00-.601.604c0 .334.269.605.601.605zm3.213 0c.333 0 .602-.27.602-.605a.603.603 0 00-.602-.604.603.603 0 00-.601.604c0 .334.27.605.601.605zM3.856 5.566a.685.685 0 00.683-.687.685.685 0 00-.683-.687.685.685 0 00-.684.687c0 .38.306.687.684.687zm3.855 0a.685.685 0 00.684-.687.685.685 0 00-.684-.687.685.685 0 00-.684.687c0 .38.306.687.684.687z" fill="#07C160"/></svg>
+                        <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M14.335 13.127a.322.322 0 00-.118.366l.217.814c.01.038.026.077.026.118a.161.161 0 01-.16.16.183.183 0 01-.094-.03l-1.054-.611a.486.486 0 00-.398-.053 5.675 5.675 0 01-1.573.221c-2.662 0-4.82-1.807-4.82-4.035 0-2.23 2.158-4.036 4.82-4.036 2.661 0 4.819 1.807 4.819 4.036 0 1.216-.649 2.31-1.665 3.05zM5.783 1.586c2.885 0 5.276 1.77 5.712 4.083a6.234 6.234 0 00-.314-.009c-2.913 0-5.274 1.978-5.274 4.417 0 .411.068.809.194 1.187a6.807 6.807 0 01-2.205-.258.577.577 0 00-.478.063l-1.266.735a.216.216 0 01-.111.036.193.193 0 01-.193-.194c0-.048.019-.096.031-.142l.26-.976a.388.388 0 00-.141-.44C.778 9.202 0 7.889 0 6.429c0-2.674 2.589-4.842 5.783-4.842zM9.574 9.39c.333 0 .602-.27.602-.605a.603.603 0 00-.602-.604.603.603 0 00-.601.604c0 .334.269.605.601.605zm3.213 0c.333 0 .602-.27.602-.605a.603.603 0 00-.602-.604.603.603 0 00-.601.604c0 .334.27.605.601.605zM3.856 5.566a.685.685 0 00.683-.687.685.685 0 00-.683-.687.685.685 0 00-.684.687c0 .38.306.687.684.687zm3.855 0a.685.685 0 00.684-.687.685.685 0 00-.684-.687.685.685 0 00-.684.687c0 .38.306.687.684.687z"
+                                fill="#07C160" />
+                        </svg>
                     </div>
-                    
+
                     <div class="sidebar-item-text">yaliuz</div>
                 </div>
-                
-             
-              
-               
             </div>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">其他</div>
                 <div class="sidebar-item ys-jf-link">
                     <div class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path
+                                d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z">
+                            </path>
                         </svg>
                     </div>
                     <div class="sidebar-item-text">@影视飓风</div>
                 </div>
                 <div class="sidebar-item">
                     <div class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"></path>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
+                            <path
+                                d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z">
+                            </path>
                             <path d="M15 7a2 2 0 0 1 2 2M15 3a6 6 0 0 1 6 6"></path>
                         </svg>
                     </div>
@@ -864,8 +963,10 @@
                 </div>
                 <div class="sidebar-item">
                     <div class="sidebar-item-icon">
-                        <svg class="ghost-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"></path>
+                        <svg class="ghost-icon" viewBox="0 0 24 24" width="24" height="24" fill="none"
+                            stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z">
+                            </path>
                             <circle cx="9" cy="10" r="1" fill="currentColor"></circle>
                             <circle cx="15" cy="10" r="1" fill="currentColor"></circle>
                         </svg>
@@ -876,7 +977,8 @@
             <div class="sidebar-section">
                 <div class="sidebar-item back-to-main">
                     <div class="sidebar-item-icon">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
+                            stroke-width="1.5">
                             <path d="M19 12H5M12 19l-7-7 7-7"></path>
                         </svg>
                     </div>
@@ -885,14 +987,17 @@
             </div>
         </div>
     </div>
-    
+
     <div class="content">
         <div class="content-container">
             <div class="slider-container" id="sliderContainer">
                 <div class="slider" id="slider">
-                    <div class="slide"><img src="https://public.ysjf.com/content/title-image/5Elh4Ili.jpg" alt="Slide 3"></div>
-                    <div class="slide"><img src="https://public.ysjf.com/content/title-image/YAGFCypC.jpg" alt="Slide 2"></div>
-                    <div class="slide"><img src="https://public.ysjf.com/content/title-image/2stZNZFu.jpg" alt="Slide 1"></div>
+                    <div class="slide"><img src="https://public.ysjf.com/content/title-image/5Elh4Ili.jpg"
+                            alt="Slide 3"></div>
+                    <div class="slide"><img src="https://public.ysjf.com/content/title-image/YAGFCypC.jpg"
+                            alt="Slide 2"></div>
+                    <div class="slide"><img src="https://public.ysjf.com/content/title-image/2stZNZFu.jpg"
+                            alt="Slide 1"></div>
                 </div>
                 <div class="slider-dots">
                     <div class="slider-dot active" data-index="0"></div>
@@ -900,7 +1005,7 @@
                     <div class="slider-dot" data-index="2"></div>
                 </div>
             </div>
-            
+
             <div class="content-header">
                 <h1 class="content-title">推荐内容</h1>
                 <div class="content-filters">
@@ -912,7 +1017,8 @@
             </div>
             <div class="content-grid">
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/tD0iaOw6.jpg" alt="Image 1" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/tD0iaOw6.jpg" alt="Image 1"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">巨嘴鸟在吃香蕉</h3>
                         <div class="card-meta">
@@ -922,7 +1028,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/%E8%87%AA%E7%84%B6%E9%A3%8E%E6%99%AF-%E7%99%BD%E6%A1%A6%E6%9E%97-08-%E5%85%A8%E6%99%AF.jpg" alt="Image 2" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/%E8%87%AA%E7%84%B6%E9%A3%8E%E6%99%AF-%E7%99%BD%E6%A1%A6%E6%9E%97-08-%E5%85%A8%E6%99%AF.jpg"
+                        alt="Image 2" class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">白桦林</h3>
                         <div class="card-meta">
@@ -932,7 +1039,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/%E4%BA%BA%E6%96%87-%E7%91%B6%E5%B1%B1%E5%8F%A4%E5%AF%A81-%E5%85%A8%E6%99%AF.jpg" alt="Image 3" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/%E4%BA%BA%E6%96%87-%E7%91%B6%E5%B1%B1%E5%8F%A4%E5%AF%A81-%E5%85%A8%E6%99%AF.jpg"
+                        alt="Image 3" class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">夏日午后</h3>
                         <div class="card-meta">
@@ -942,7 +1050,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/%E4%BA%BA%E6%96%87-%E8%82%87%E5%85%B4%E4%BE%97%E5%AF%A816-%E4%B8%AD%E6%99%AF.jpg" alt="Image 4" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/%E4%BA%BA%E6%96%87-%E8%82%87%E5%85%B4%E4%BE%97%E5%AF%A816-%E4%B8%AD%E6%99%AF.jpg"
+                        alt="Image 4" class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">肇兴侗寨</h3>
                         <div class="card-meta">
@@ -952,7 +1061,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/1Olprx9D.jpg" alt="Image 5" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/1Olprx9D.jpg" alt="Image 5"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">红蟹在进食</h3>
                         <div class="card-meta">
@@ -962,7 +1072,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/mediastorm/material/material/%E8%B4%B9%E5%B0%94%E7%8F%AD%E5%85%8B%E6%96%AF-05-%E8%BF%91%E6%99%AF-20250107.JPG" alt="Image 6" class="card-image">
+                    <img src="https://public.ysjf.com/mediastorm/material/material/%E8%B4%B9%E5%B0%94%E7%8F%AD%E5%85%8B%E6%96%AF-05-%E8%BF%91%E6%99%AF-20250107.JPG"
+                        alt="Image 6" class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">雪橇犬</h3>
                         <div class="card-meta">
@@ -972,7 +1083,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/UNW9IGojyb-.jpg" alt="Image 7" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/UNW9IGojyb-.jpg" alt="Image 7"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">小憩的柯基</h3>
                         <div class="card-meta">
@@ -982,7 +1094,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/c41TAnfSnSA.jpg" alt="Image 8" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/c41TAnfSnSA.jpg" alt="Image 8"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">天鹅湖</h3>
                         <div class="card-meta">
@@ -992,7 +1105,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/mediastorm/material/material/%E5%8A%A8%E7%89%A9_%E4%BA%AC%E9%83%BD_2_%E7%89%B9%E5%86%99.jpg" alt="Image 9" class="card-image">
+                    <img src="https://public.ysjf.com/mediastorm/material/material/%E5%8A%A8%E7%89%A9_%E4%BA%AC%E9%83%BD_2_%E7%89%B9%E5%86%99.jpg"
+                        alt="Image 9" class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">京都</h3>
                         <div class="card-meta">
@@ -1002,7 +1116,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/TRvrTnnp.jpg" alt="Image 10" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/TRvrTnnp.jpg" alt="Image 10"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">火箭发射</h3>
                         <div class="card-meta">
@@ -1012,7 +1127,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/hAbEG4cC.jpg" alt="Image 11" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/hAbEG4cC.jpg" alt="Image 11"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">旅途</h3>
                         <div class="card-meta">
@@ -1022,7 +1138,8 @@
                     </div>
                 </div>
                 <div class="content-card">
-                    <img src="https://public.ysjf.com/content/title-image/UbJ0HBtl.jpg" alt="Image 12" class="card-image">
+                    <img src="https://public.ysjf.com/content/title-image/UbJ0HBtl.jpg" alt="Image 12"
+                        class="card-image">
                     <div class="card-content">
                         <h3 class="card-title">盛开的荷花</h3>
                         <div class="card-meta">
@@ -1034,7 +1151,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="bottom-nav" id="bottomNav">
         <div class="bottom-nav-items">
             <div class="bottom-nav-item active" data-section="home">
@@ -1045,7 +1162,9 @@
             </div>
             <div class="bottom-nav-item" data-section="explore">
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zm-.23 5.86l-8.5 4.5c-1.34.71-3.01.2-3.72-1.14-.71-1.34-.2-3.01 1.14-3.72l2.04-1.08v-1.21l-.69-.28-1.11-.46c-.99-.41-1.65-1.35-1.7-2.41-.05-1.06.52-2.06 1.46-2.56l8.5-4.5c1.34-.71 3.01-.2 3.72 1.14.71 1.34.2 3.01-1.14 3.72L15.5 9.26v1.21l1.8.74c.99.41 1.65 1.35 1.7 2.41.05 1.06-.52 2.06-1.46 2.56z"></path>
+                    <path
+                        d="M10 14.65v-5.3L15 12l-5 2.65zm7.77-4.33c-.77-.32-1.2-.5-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.93c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.25zm-.23 5.86l-8.5 4.5c-1.34.71-3.01.2-3.72-1.14-.71-1.34-.2-3.01 1.14-3.72l2.04-1.08v-1.21l-.69-.28-1.11-.46c-.99-.41-1.65-1.35-1.7-2.41-.05-1.06.52-2.06 1.46-2.56l8.5-4.5c1.34-.71 3.01-.2 3.72 1.14.71 1.34.2 3.01-1.14 3.72L15.5 9.26v1.21l1.8.74c.99.41 1.65 1.35 1.7 2.41.05 1.06-.52 2.06-1.46 2.56z">
+                    </path>
                 </svg>
                 <span>探索</span>
             </div>
@@ -1063,7 +1182,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         const body = document.body;
         const sidebar = document.getElementById('sidebar');
@@ -1079,8 +1198,6 @@
         const menuItems = document.querySelectorAll('.sidebar-item');
         const slider = document.getElementById('slider');
         const sliderDots = document.querySelectorAll('.slider-dot');
-        const contentContainer = document.querySelector('.content-container');
-        const contentGrid = document.querySelector('.content-grid');
         const ysJfLink = document.querySelector('.ys-jf-link');
 
         // 图片模态框元素
@@ -1111,11 +1228,9 @@
             // 5:00-24:00为白天主题，其他时间为夜晚主题
             if (hours >= 5 && hours <= 23) {
                 body.classList.add('light-theme');
-                themeToggle.querySelector('img').src = themeIcons.light;
                 localStorage.setItem('theme', 'light');
             } else {
                 body.classList.remove('light-theme');
-                themeToggle.querySelector('img').src = themeIcons.dark;
                 localStorage.setItem('theme', 'dark');
             }
         }
@@ -1128,7 +1243,6 @@
             body.classList.toggle('light-theme');
             const theme = body.classList.contains('light-theme') ? 'light' : 'dark';
             localStorage.setItem('theme', theme);
-            themeToggle.querySelector('img').src = themeIcons[theme];
             element.classList.add('rotate');
             setTimeout(() => element.classList.remove('rotate'), 500);
         }
@@ -1149,12 +1263,11 @@
 
         // 图片模态框功能
         function initImageModal() {
-            // 为每张卡片添加点击事件
             contentCards.forEach(card => {
-                card.addEventListener('click', function() {
+                card.addEventListener('click', function () {
                     const img = this.querySelector('.card-image');
                     const title = this.querySelector('.card-title').textContent;
-                    
+
                     modalImg.src = img.src;
                     modalCaption.textContent = title;
                     modal.classList.add('show');
@@ -1162,22 +1275,19 @@
                 });
             });
 
-            // 关闭模态框
-            modalClose.addEventListener('click', function() {
+            modalClose.addEventListener('click', function () {
                 modal.classList.remove('show');
                 document.body.style.overflow = '';
             });
 
-            // 点击模态框背景也关闭
-            modal.addEventListener('click', function(e) {
+            modal.addEventListener('click', function (e) {
                 if (e.target === modal) {
                     modal.classList.remove('show');
                     document.body.style.overflow = '';
                 }
             });
 
-            // 按ESC键关闭模态框
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && modal.classList.contains('show')) {
                     modal.classList.remove('show');
                     document.body.style.overflow = '';
@@ -1259,9 +1369,9 @@
             const cards = document.querySelectorAll('.content-card');
             let scrollPosition = 0;
             if (section === 'explore') {
-                scrollPosition = cards[4].offsetTop - 100; // Second row
+                scrollPosition = cards[4].offsetTop - 100;
             } else if (section === 'subscriptions') {
-                scrollPosition = cards[8].offsetTop - 100; // Third row
+                scrollPosition = cards[8].offsetTop - 100;
             }
             window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
         }
@@ -1271,7 +1381,7 @@
             return window.innerHeight + window.scrollY >= document.body.offsetHeight - 50;
         }
 
-        // Auto-collapse sidebar on desktop
+        // Initialize
         window.addEventListener('load', () => {
             if (window.innerWidth > 768) {
                 setTimeout(() => {
@@ -1282,7 +1392,7 @@
                 }, 2000);
             }
             initSlider();
-            initImageModal(); // 初始化图片模态框
+            initImageModal();
         });
 
         // Screen size handling
@@ -1322,12 +1432,10 @@
         });
 
         // Event listeners
-        themeToggle.addEventListener('click', () => toggleTheme(themeToggle));
-        sidebarThemeToggle.addEventListener('click', () => toggleTheme(themeToggle));
+        sidebarThemeToggle.addEventListener('click', () => toggleTheme(sidebarThemeToggle));
         contactToggle.addEventListener('click', toggleContactView);
         backToMain.addEventListener('click', toggleContactView);
-        
-        // 修改后的userAvatar点击事件
+
         userAvatar.addEventListener('click', () => {
             if (window.innerWidth <= 768) {
                 isMenuOpen = !isMenuOpen;
@@ -1348,17 +1456,15 @@
             document.body.style.overflow = '';
         });
 
-        // 修改menuItems点击事件，排除联系方式项
         menuItems.forEach(item => {
-            item.addEventListener('click', function() {
-                // 如果是联系方式项，不执行关闭操作
+            item.addEventListener('click', function () {
                 const isContactItem = this.closest('.contact-content');
                 if (isContactItem && !this.classList.contains('back-to-main')) return;
-                
-                if (this.classList.contains('theme-toggle-item') || 
+
+                if (this.classList.contains('theme-toggle-item') ||
                     this.classList.contains('contact-toggle') ||
                     this.classList.contains('back-to-main')) return;
-                    
+
                 menuItems.forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
                 if (window.innerWidth <= 768) {
@@ -1372,7 +1478,7 @@
         });
 
         bottomNavItems.forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function () {
                 bottomNavItems.forEach(i => i.classList.remove('active'));
                 this.classList.add('active');
                 if (this.dataset.section === 'menu') {
@@ -1396,8 +1502,7 @@
             button.addEventListener('click', () => {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-                
-                // 在手机端点击按钮时控制幻灯片播放
+
                 if (window.innerWidth <= 768) {
                     const slideIndex = parseInt(button.dataset.slide);
                     goToSlide(slideIndex);
@@ -1406,13 +1511,11 @@
             });
         });
 
-        // 影视飓风链接点击事件
         ysJfLink.addEventListener('click', (e) => {
             e.preventDefault();
             window.location.href = 'https://www.ysjf.com/home';
         });
 
-        // Scroll logic for bottom nav
         window.addEventListener('scroll', () => {
             if (window.innerWidth > 768) return;
             const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
@@ -1426,10 +1529,10 @@
             lastScrollPosition = currentScrollPosition <= 0 ? 0 : currentScrollPosition;
         });
 
-        // Prevent scrolling when sidebar is open on mobile
         document.addEventListener('touchmove', e => {
             if (isMenuOpen) e.preventDefault();
         }, { passive: false });
     </script>
 </body>
+
 </html>
